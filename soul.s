@@ -1,6 +1,6 @@
 @================[INCLUDE]===============
 .include "sets.inc"
-@jsdaoijdiaso
+
 @========================================
 .org 0x0
 .section .iv,"a"
@@ -111,6 +111,7 @@ RESET_HANDLER:
     bl configure_GPT
     bl configure_TZIC
 
+    ldr pc, =0x77800700
     msr  CPSR_c,  #0x13   @ SUPERVISOR mode, IRQ/FIQ enabled
 
 
