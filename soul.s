@@ -53,6 +53,21 @@ configure_GPT:
 
     stmfd sp!, {lr}
     mov pc, lr
+configure_GPIO:
+    stmdb sp!, {lr}
+    
+    @ Mascara de entrada/saida
+    ldr r0, =0xFFFC003E
+	ldr r1, =GPIO_BASE
+    
+    @ Adiciona mascara em GDIR
+    str r0, [r1, #GPIO_GDIR]
+
+	mov r0, #0
+  	str r0, [r1, #GPIO_DR]
+    
+    ldmfd sp!, {lr}
+    mov pc,lr
 
 configure_TZIC:
     stmfd sp!, {lr}
@@ -103,15 +118,17 @@ configure_TZIC:
 
 
 RESET_HANDLER:
-
-    @Set interrupt table base address on coprocessor 15.
+     @Set interrupt table base address on coprocessor 15.
     ldr r0, =interrupt_vector
     mcr p15, 0, r0, c12, c0, 0
+    
+    msr  CPSR_c, #0x1F       @ System mode
+   
 
     bl configure_GPT
     bl configure_TZIC
     
-    msr  CPSR_c,  #0x10 @ USER mode
+    msr  CPSR_c,  #0x10 @ User mode
     ldr pc, =0x77800700
 
 
