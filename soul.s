@@ -55,17 +55,17 @@ configure_GPT:
     mov pc, lr
 configure_GPIO:
     stmdb sp!, {lr}
-    
+
     @ Mascara de entrada/saida
     ldr r0, =0xFFFC003E
 	ldr r1, =GPIO_BASE
-    
+
     @ Adiciona mascara em GDIR
     str r0, [r1, #GPIO_GDIR]
 
 	mov r0, #0
   	str r0, [r1, #GPIO_DR]
-    
+
     ldmfd sp!, {lr}
     mov pc,lr
 
@@ -121,13 +121,14 @@ RESET_HANDLER:
      @Set interrupt table base address on coprocessor 15.
     ldr r0, =interrupt_vector
     mcr p15, 0, r0, c12, c0, 0
-    
+
     msr  CPSR_c, #0x1F       @ System mode
-   
+
 
     bl configure_GPT
+    bl configura_GPIO
     bl configure_TZIC
-    
+
     msr  CPSR_c,  #0x10 @ User mode
     ldr pc, =0x77800700
 
@@ -187,8 +188,7 @@ syscall_vector:
     movs pc,lr
 
 read_sonar:
-
-    stmfd sp!, {r0}
+    ldmfd sp!, {r0}
 
 register_proximity_callback:
 
@@ -196,8 +196,30 @@ set_motor_speed:
 
 set_motors_speed:
 
+  stmfd sp!, {r4-r11,lr}
+
+  ldr r2, =GPIO_BASE
+
+  mov r3, #0x3F
+  mov r4, r3, LSL #19
+  orr r4, r4, r3, LSL #26
+  mvn r4, r4     @ cleaning mask
+  and r0, r0, r3 @ limited speed 0
+  and r1, r1, r3 @ limited speed 1
+  mov r3, r0, LSL #19
+  orr r3, r3, r1, LSL #26
+
+  ldr r0, [r2, #GPIO_DR]
+  and r0, r0, r4
+  orr r0, r0, r3
+
+  str r0, [r2, #GPIO_DR]
+
+  ldmfd sp!, {r4-r11,pc}
+
 get_time:
 
 set_time:
 
 set_alarm:
+
