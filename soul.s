@@ -110,9 +110,10 @@ RESET_HANDLER:
 
     bl configure_GPT
     bl configure_TZIC
-
+    
+    msr  CPSR_c,  #0x10 @ USER mode
     ldr pc, =0x77800700
-    msr  CPSR_c,  #0x13   @ SUPERVISOR mode, IRQ/FIQ enabled
+
 
 
 
